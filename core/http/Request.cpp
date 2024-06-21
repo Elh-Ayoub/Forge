@@ -52,18 +52,8 @@ void requestListener(int newsockfd, sockaddr_in clientAddress){
     routes();
 
     // run target route
-    Router::run(req);
+    Router::run(req, newsockfd);
 
-    const char* response = 
-    "HTTP/1.1 200 OK\r\n"
-    "Content-Type: application/json\r\n"
-    "\r\n"
-    "{\"message\": \"Hello, world\"}";
-
-    // Send the response
-    int bytesSent = send(newsockfd, response, strlen(response), 0);
-    if (bytesSent < 0) {
-        perror("Error sending response");
-    }
+    // close 
     close(newsockfd);
 }

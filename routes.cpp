@@ -4,5 +4,5 @@
 
 void routes(){
     Router::GET("/", UserController::index);
-    Router::GET("/test", UserController::test2);
+    Router::POST("/test", UserController::test2);
 }

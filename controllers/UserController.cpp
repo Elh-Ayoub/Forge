@@ -1,10 +1,10 @@
 #include "controller.h"
 #include <iostream>
 
-void UserController::index(Request request){
-    std::cout << "Index here" << std::endl;
+Response UserController::index(Request request, Response response){
+    return response.json("{'message': 'Index'}");
 }
 
-void UserController::test2(Request request){
-    std::cout << "Another test!" << std::endl;
+Response UserController::test2(Request request, Response response){
+    return response.text("Test 2").setStatus(401);
 }

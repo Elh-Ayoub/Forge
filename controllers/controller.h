@@ -1,12 +1,13 @@
 #include "../core/http/request.h"
+#include "../core/http/response.h"
 
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
 class UserController{
     public:
-        static void index(Request request);
-        static void test2(Request request);
+        static Response index(Request ,Response);
+        static Response test2(Request, Response);
 };
 
 #endif
