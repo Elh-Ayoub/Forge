@@ -1,3 +1,8 @@
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <string.h>
 #include <vector>
 #include <string>
 using namespace std;
@@ -5,6 +10,7 @@ using namespace std;
 #ifndef REQUEST_H
 #define REQUEST_H
 
+void requestListener(int, sockaddr_in);
 class Request{
     public:
         Request();
@@ -16,9 +22,6 @@ class Request{
         char** headers;
         char** body;
         char** query;
-
-    private: 
-        char buffer[];
     
     // static void init();
 };

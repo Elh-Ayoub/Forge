@@ -2,11 +2,12 @@
 #include <string>
 #include <iostream>
 #include "request.h"
+#include "parser.h"
+#include "../router/router.h"
+
 using namespace std;
 
-Request::Request(){
-
-}
+Request::Request(){ }
 
 Request::Request(vector<string> parsedBuffer, string ip){
     // parse(buffer);
@@ -34,6 +35,35 @@ Request::Request(vector<string> parsedBuffer, string ip){
     cout << "Method: " << Request::method << ", Route: " << Request::url << " " << lines.at(2) << endl;
 }
 
-Request::Request(char* ip, char* method, char* url){
+Request::Request(char* ip, char* method, char* url){ }
 
+void requestListener(int newsockfd, sockaddr_in clientAddress){
+    char clientIP[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &clientAddress.sin_addr, clientIP, INET_ADDRSTRLEN);	
+
+    char buffer[1024] = { 0 };
+    recv(newsockfd, buffer, sizeof(buffer), 0);
+    // printf("Message from %s:\n%s\n", clientIP, buffer);
+
+    // Init Request
+    Request req(parse(buffer), clientIP);
+    
+    // Init Routes
+    routes();
+
+    // run target route
+    Router::run(req);
+
+    const char* response = 
+    "HTTP/1.1 200 OK\r\n"
+    "Content-Type: application/json\r\n"
+    "\r\n"
+    "{\"message\": \"Hello, world\"}";
+
+    // Send the response
+    int bytesSent = send(newsockfd, response, strlen(response), 0);
+    if (bytesSent < 0) {
+        perror("Error sending response");
+    }
+    close(newsockfd);
 }

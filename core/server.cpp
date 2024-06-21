@@ -6,57 +6,73 @@
 #include <unistd.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <thread>
 #include "http/parser.h"
 #include "http/request.h"
+#include <csignal>
 
 using namespace std;
+vector<thread> threads;
+int serverSocket;
+
+void handleExit(int signal) {
+	cout << "\nExit." << endl;
+    close(serverSocket);
+    exit(signal);
+}
 
 int init(){
-    int port = 8000;
-	int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+	int port = 8000;
+	signal(SIGINT, handleExit);
+	
+	printf("Initializing...\n");
+	serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+	if (serverSocket < 0) {
+        perror("Failed to create server");
+        return 1;
+    }
 
-	printf("init...\n");
 	sockaddr_in serverAddres;
 	serverAddres.sin_family = AF_INET;
 	serverAddres.sin_port = htons(port);
 	serverAddres.sin_addr.s_addr = INADDR_ANY;
 
+	// Allow socket reuse
+    int opt = 1;
+    if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+        perror("setsockopt(SO_REUSEADDR) failed");
+    }
 	if(bind(serverSocket, (struct sockaddr*)&serverAddres, sizeof(serverAddres)) < 0){
 		printf("Failed to bind socket!\n");
+		close(serverSocket);
 		return -1;
 	}
 
-    printf("Listening on port: %i\n", port);
-	while(listen(serverSocket, 100) == 0){
-		sockaddr_in clientAddress;
-		socklen_t clientAddressLen = sizeof(clientAddress);
-		int newsockfd = accept(serverSocket, (struct sockaddr*)&clientAddress, &clientAddressLen);
-		
-		if(newsockfd < 0){
-			printf("Failed to accept connect");
+	printf("Listening on port: %i\n", port);
+	if (listen(serverSocket, 100) < 0) {
+		perror("Failed to listen on socket");
+		close(serverSocket);
+		return 1;
+	}
+
+	try
+	{
+		while(true){
+			sockaddr_in clientAddress;
+			socklen_t clientAddressLen = sizeof(clientAddress);
+			int newsockfd = accept(serverSocket, (struct sockaddr*)&clientAddress, &clientAddressLen);
+			
+			if(newsockfd < 0){
+				printf("Failed to accept connect");
+			}
+			
+			threads.emplace_back(thread(requestListener, newsockfd, clientAddress));
+			threads.back().detach();
 		}
-
-		char clientIP[INET_ADDRSTRLEN];
-		inet_ntop(AF_INET, &clientAddress.sin_addr, clientIP, INET_ADDRSTRLEN);	
-
-	    char buffer[1024] = { 0 };
-		recv(newsockfd, buffer, sizeof(buffer), 0);
-		printf("Message from %s:\n%s\n", clientIP, buffer);
-
-        Request req(parse(buffer), clientIP);
-
-		const char* response = 
-		"HTTP/1.1 200 OK\r\n"
-		"Content-Type: application/json\r\n"
-		"\r\n"
-		"{\"message\": \"Hello, world\"}";
-
-		// Send the response
-		int bytesSent = send(newsockfd, response, strlen(response), 0);
-		if (bytesSent < 0) {
-			perror("Error sending response");
-		}
-		close(newsockfd);
+	}
+	catch(const exception& e)
+	{
+		cerr << e.what() << '\n';
 	}
 	close(serverSocket);
 	return 0;
