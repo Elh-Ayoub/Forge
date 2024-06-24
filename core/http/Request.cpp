@@ -10,29 +10,49 @@ using namespace std;
 Request::Request(){ }
 
 Request::Request(vector<string> parsedBuffer, string ip){
-    // parse(buffer);
-    const auto& row1 = parsedBuffer.at(0);
-
-    
-    // Method
     vector<string> lines;
     string line1;
-
-    for (char ch : row1) {
-        if (ch == ' ') {
-            lines.push_back(line1);
-            line1.clear();
-        } else {
-            line1 += ch;
+    map<string, string> headersMap;
+    int i = 0;
+    for(const auto& row : parsedBuffer){
+        if(i == 0){
+            for (char ch : row) {
+                if (ch == ' ') {
+                    lines.push_back(line1);
+                    line1.clear();
+                } else {
+                    line1 += ch;
+                }
+            }
+            if (!line1.empty()) {
+                lines.push_back(line1);
+            }
+            Request::method = lines.at(0);
+            Request::url = lines.at(1);
+            Request::ip = ip;
+            cout << "Method: " << Request::method << ", Route: " << Request::url << " " << lines.at(2) << endl;
         }
+        else{
+            // map<string, int> map;
+            for (char ch : row) {
+                if (ch == ':') {
+                    lines.push_back(line1);
+                    line1.clear();
+                } else {
+                    line1 += ch;
+                }
+            }
+            if (!line1.empty()) {
+                lines.push_back(line1);
+            }
+            string value = lines.size() > 1 ? lines.at(1) : "";
+            headersMap[lines.at(0)] = value;
+        }
+        lines.clear();
+        line1 = "";
+        Request::headers = headersMap;
+        i++;
     }
-    if (!line1.empty()) {
-        lines.push_back(line1);
-    }
-    Request::method = lines.at(0);
-    Request::url = lines.at(1);
-    Request::ip = ip;
-    cout << "Method: " << Request::method << ", Route: " << Request::url << " " << lines.at(2) << endl;
 }
 
 Request::Request(char* ip, char* method, char* url){ }

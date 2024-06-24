@@ -5,6 +5,8 @@
 #include <string.h>
 #include <vector>
 #include <string>
+#include <map>
+#include <mutex>
 using namespace std;
 
 #ifndef REQUEST_H
@@ -19,11 +21,7 @@ class Request{
         string ip;
         string method;
         string url;
-        char** headers;
-        char** body;
-        char** query;
-    
-    // static void init();
+        map<string, string> headers;
 };
 
 #endif

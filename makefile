@@ -34,7 +34,7 @@ all: $(OUTPUT)
 
 # Rule to link all object files into the final executable
 $(OUTPUT): $(SERVER_OBJ) $(HTTP_OBJ) $(CONTROLLER_OBJ) $(ROUTER_OBJ) $(MAIN_OBJ) $(ROUTES_OBJ)
-	$(CXX) $^ -o $@
+	$(CXX) $^ -Wextra -fsanitize=address -o $@
 
 # Rule to compile main.cpp into main.o
 $(BUILD_DIR)/main.o: $(MAIN_SRC)
