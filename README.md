@@ -69,10 +69,12 @@ Response UserController::test2(Request request, Response response){
 
 # Contributing
 
-We welcome contributions from the community! If you'd like to contribute
+We welcome contributions! Feel free to submit issues and pull requests.
+
 
 # License
 Forge is released under the MIT `License`. See LICENSE for more information.
+
 
 # Contact
 If you have any questions, feel free to open an issue or contact me at `contact@aelhaddadi.com`
